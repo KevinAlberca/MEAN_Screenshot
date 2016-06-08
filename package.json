@@ -3,8 +3,6 @@
   "version": "0.0.1",
   "dependencies": {
     "express": "4.13.3",
-    "body-parser": "1.14.1",
-    "angular": "1.4.8",
-    "angular-route": "1.4.8"
+    "body-parser": "1.14.1"
   }
 }
