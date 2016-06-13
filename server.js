@@ -2,22 +2,30 @@
  * Created by AwH on 08/06/16.
  */
 
-var express = require("express"),
-    app = express(),
-    bodyParser = require("body-parser"),
-    port = process.env.PORT || 3000;
+var received_website = [],
+    app = require('http').createServer(handler),
+    io = require('socket.io')(app),
+    fs = require('fs');
 
+app.listen(8080);
 
-app.use(bodyParser.json({ extends:true }));
-app.use(bodyParser.json());
-app.use("/", express.static("./public"));
+function handler (req, res) {
+    fs.readFile(__dirname + '/public/index.html',
+        function (err, data) {
+            if (err) {
+                res.writeHead(500);
+                return res.end('Error loading index.html');
+            }
 
-
-require("./routes")(app);
-
-if(app.listen(port)){
-    exports = module.exports = app;
-    console.log("Application disponible sur le port " + port);
-} else {
-    console.log("L'application n'a pas pu etre demaree");
+            res.writeHead(200);
+            res.end(data);
+        });
 }
+
+io.on('connection', function (socket) {
+    socket.emit('news', { hello: 'world' }); // Envoi un objet nomme
+    socket.on('new website', function (data) {
+        received_website.push(data);
+        console.log(received_website);
+    });
+});
