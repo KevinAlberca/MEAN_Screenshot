@@ -2,22 +2,35 @@
  * Created by AwH on 08/06/16.
  */
 
-var express = require("express"),
+var received_website = [],
+    express = require('express'),
     app = express(),
-    bodyParser = require("body-parser"),
-    port = process.env.PORT || 3000;
+    server = require('http').Server(app),
+    io = require('socket.io')(server),
+    webshot = require('webshot');
 
 
-app.use(bodyParser.json({ extends:true }));
-app.use(bodyParser.json());
-app.use("/", express.static("./public"));
 
+app.get('/', function (req, res) {
+    res.sendFile(__dirname + '/public/index.html');
+});
 
-require("./routes")(app);
+app.use("/", express.static("./"));
+app.use("/public/img", express.static("./public/img"));
 
-if(app.listen(port)){
-    exports = module.exports = app;
-    console.log("Application disponible sur le port " + port);
-} else {
-    console.log("L'application n'a pas pu etre demaree");
-}
+server.listen(8080);
+
+io.on('connection', function (socket) {
+    socket.emit('website_list', received_website);
+    socket.on('new_website', function (data) {
+        data.screenshot = "Empty screenshot";
+        var img_name = data.url.substr(7).replace(".", "_");
+
+        webshot(data.url, __dirname+'/public/img/'+img_name+'.png', function(err) {
+          // screenshot now saved to google.png
+          data.screenshot = '/public/img/'+img_name+'.png';
+          received_website.push(data);
+          socket.emit('website_list', received_website);
+        });
+    });
+});

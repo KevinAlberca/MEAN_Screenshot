@@ -7,10 +7,73 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
 </head>
 <body>
-    Hello World !
+    <h1 class="center">MEAN - Screenshooter</h1>
+
+    <!--<a class="waves-effect waves-light btn modal-trigger" href="#modal1">Modal</a>-->
+    <div class="container">
+        <div class="row">
+            <div class="col s1">
+                <a class="btn-floating btn-large waves-effect waves-light red modal-trigger" href="#modal1">+</a>
+            </div>
+            <div class="col s11">
+                <ul id="websites">
+
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="modal1" class="modal">
+        <div class="modal-content">
+            <h4>Quel site prendre en photo ?</h4>
+            <div class="row">
+                <div class="col s8">
+                    <input type="url" name="website_to_screen" id="website_to_screen" placeholder="Which website to screen ?" required />
+                </div>
+                <div class="col s3">
+                    <button class="btn" type="submit" id="submit">Submit</button>
+                </div>
+                <div class="col 12">
+                    <textarea name="description" id="description" cols="30" rows="10"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Agree</a>
+        </div>
+    </div>
+
+
+
+
+
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
     <!-- Compiled and minified JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        $(document).ready(function(){
+            var socket = io.connect('http://localhost:8080');
+            $('.modal-trigger').leanModal();
+            $("#submit").click(function(){
+                if($("#website_to_screen").val()){
+                    var url = $("#website_to_screen").val().substr(0, 7) != "http://" ? url = "http://" + $("#website_to_screen").val() : $("#website_to_screen").val();
+                    socket.emit('new_website', { url: url, description: $("#description").val() }); // Envoi un objet au serveur node
+                }
+            });
+
+            socket.on("website_list", function(data){
+                for(var d in data){
+                    console.log(d);
+                    $("#websites").append("<li><h2>"+data[d].url+"</h2><p>"+data[d].description+"</p><img src="+data[d].screenshot+" alt='"+data[d].description+"' /></li>");
+                }
+            });
+
+        });
+    </script>
 </body>
 </html>
